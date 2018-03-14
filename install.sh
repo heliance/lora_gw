@@ -11,7 +11,7 @@ fi
 VERSION="master"
 if [[ $1 != "" ]]; then VERSION=$1; fi
 
-echo "The Things Network Gateway installer"
+echo "Avalcom LoRa GW installer"
 echo "Version $VERSION"
 
 # Update the gateway installer to the correct branch (defaults to master)
@@ -44,25 +44,26 @@ if [[ `grep "$GATEWAY_EUI_NIC" /proc/net/dev` == "" ]]; then
     exit 1
 fi
 
-GATEWAY_EUI=$(ip link show $GATEWAY_EUI_NIC | awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3"FFFE"$4$5$6}')
-GATEWAY_EUI=${GATEWAY_EUI^^} # toupper
+GATEWAY_EUI=$(ip link show $GATEWAY_EUI_NIC |
+awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3"FFFE"$4$5$6}')
+GATEWAY_EUI=${GATEWAY_EUI^^} # to upper
 
 echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
 
 read -r -p "Do you want to use remote settings file? [y/N]" response
-response=${response,,} # tolower
+response=${response,,} # to lower
 
 if [[ $response =~ ^(yes|y) ]]; then
-    NEW_HOSTNAME="ttn-gateway"
+    NEW_HOSTNAME="ava-lora-gw"
     REMOTE_CONFIG=true
 else
-    printf "       Host name [ttn-gateway]:"
+    printf "       Host name [ava-lora-gw]:"
     read NEW_HOSTNAME
-    if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ttn-gateway"; fi
+    if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ava-lora-gw"; fi
 
-    printf "       Descriptive name [ttn-ic880a]:"
+    printf "       Descriptive name [raspi-ic880a]:"
     read GATEWAY_NAME
-    if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="ttn-ic880a"; fi
+    if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="raspi-ic880a"; fi
 
     printf "       Contact email: "
     read GATEWAY_EMAIL
@@ -96,7 +97,7 @@ echo "Installing dependencies..."
 apt-get install swig libftdi-dev python-dev
 
 # Install LoRaWAN packet forwarder repositories
-INSTALL_DIR="/opt/ttn-gateway"
+INSTALL_DIR="/opt/ava-lora-gw"
 if [ ! -d "$INSTALL_DIR" ]; then mkdir $INSTALL_DIR; fi
 pushd $INSTALL_DIR
 
@@ -119,9 +120,10 @@ popd
 
 # Build LoRa gateway app
 if [ ! -d lora_gateway ]; then
-    git clone -b legacy https://github.com/TheThingsNetwork/lora_gateway.git
+    git clone -b master https://github.com/heliance/lora_gateway,git
     pushd lora_gateway
 else
+    # Need to update the following or remove.
     pushd lora_gateway
     git fetch origin
     git checkout legacy
@@ -140,7 +142,7 @@ popd
 
 # Build packet forwarder
 if [ ! -d packet_forwarder ]; then
-    git clone -b legacy https://github.com/TheThingsNetwork/packet_forwarder.git
+    git clone -b master https://github.com/heliance/packet_forwarder.git
     pushd packet_forwarder
 else
     pushd packet_forwarder
@@ -156,8 +158,8 @@ popd
 # Symlink poly packet forwarder
 if [ ! -d bin ]; then mkdir bin; fi
 if [ -f ./bin/poly_pkt_fwd ]; then rm ./bin/poly_pkt_fwd; fi
-ln -s $INSTALL_DIR/packet_forwarder/poly_pkt_fwd/poly_pkt_fwd ./bin/poly_pkt_fwd
-cp -f ./packet_forwarder/poly_pkt_fwd/global_conf.json ./bin/global_conf.json
+ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd ./bin/poly_pkt_fwd
+cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
@@ -165,7 +167,7 @@ LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
 
 if [ "$REMOTE_CONFIG" = true ] ; then
-    # Get remote configuration repo
+    # Get remote configuration repo. Need to update or remove.
     if [ ! -d gateway-remote-config ]; then
         git clone https://github.com/ttn-zh/gateway-remote-config.git
         pushd gateway-remote-config
@@ -179,21 +181,25 @@ if [ "$REMOTE_CONFIG" = true ] ; then
 
     popd
 else
-    echo -e "{\n\t\"gateway_conf\": {\n\t\t\"gateway_ID\": \"$GATEWAY_EUI\",\n\t\t\"servers\": [ { \"server_address\": \"router.eu.thethings.network\", \"serv_port_up\": 1700, \"serv_port_down\": 1700, \"serv_enabled\": true } ],\n\t\t\"ref_latitude\": $GATEWAY_LAT,\n\t\t\"ref_longitude\": $GATEWAY_LON,\n\t\t\"ref_altitude\": $GATEWAY_ALT,\n\t\t\"contact_email\": \"$GATEWAY_EMAIL\",\n\t\t\"description\": \"$GATEWAY_NAME\" \n\t}\n}" >$LOCAL_CONFIG_FILE
+    echo -e "{\n\t\"gateway_conf\": {\n\t\t\"gateway_ID\": \"$GATEWAY_EUI\",
+    \n\t\t\"servers\": [ { \"server_address\": \"router.eu.thethings.network\",
+     \"serv_port_up\": 1700, \"serv_port_down\": 1700, \"serv_enabled\": true } ],
+     \n\t\t\"ref_latitude\": $GATEWAY_LAT,\n\t\t\"ref_longitude\": $GATEWAY_LON,
+     \n\t\t\"ref_altitude\": $GATEWAY_ALT,\n\t\t\"contact_email\": \"$GATEWAY_EMAIL\",
+     \n\t\t\"description\": \"$GATEWAY_NAME\" \n\t}\n}" >$LOCAL_CONFIG_FILE
 fi
 
 popd
 
 echo "Gateway EUI is: $GATEWAY_EUI"
 echo "The hostname is: $NEW_HOSTNAME"
-echo "Open TTN console and register your gateway using your EUI: https://console.thethingsnetwork.org/gateways"
 echo
 echo "Installation completed."
 
 # Start packet forwarder as a service
 cp ./start.sh $INSTALL_DIR/bin/
-cp ./ttn-gateway.service /lib/systemd/system/
-systemctl enable ttn-gateway.service
+cp ./lora-gateway.service /lib/systemd/system/
+systemctl enable lora-gateway.service
 
 echo "The system will reboot in 5 seconds..."
 sleep 5

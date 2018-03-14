@@ -1,0 +1,12 @@
+[Unit]
+Description=Avalcom LoRa GW
+
+[Service]
+WorkingDirectory=/opt/ava-lora-gw/bin/
+ExecStart=/opt/ava-lora-gw/bin/start.sh
+SyslogIdentifier=ava-lora-gw
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
