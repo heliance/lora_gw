@@ -1,15 +1,16 @@
 ## Setup based on Raspbian image
 
-- Download [Raspbian Jessie Lite](https://www.raspberrypi.org/downloads/)
-- Follow the [installation instruction](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) to create the SD card
-- Start your RPi connected to Ethernet
-- Plug the iC880a (**WARNING**: first power plug to the wall socket, then to the gateway DC jack, and ONLY THEN USB to RPi!)
-- From a computer in the same LAN, `ssh` into the RPi using the default hostname:
+- Download [Raspbian Jessie Lite](https://www.raspberrypi.org/downloads/).
+- Follow the [installation instruction](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) to create the SD card.
+- Start your RPi connected to Ethernet.
+- Plug the iC880a (**WARNING**: first power plug to the wall socket, then to
+the gateway DC jack,and ONLY THEN USB to RPi!).
+- Connect monitor and keyboard to the RPi.
+- Default password of a plain-vanilla RASPBIAN install for user `pi` is `raspberry`.
 
-        local $ ssh pi@raspberrypi.local
-
-- Default password of a plain-vanilla RASPBIAN install for user `pi` is `raspberry`
-- Use `raspi-config` utility to expand the filesystem (1 Expand filesystem):
+- You may want to enabled `ssh` server on the RPi (as it has been disabled by default)
+and expand the filesystem . Use `raspi-config` utility (3 Interfacing options. P2 SSH.
+Then go to 1 Expand filesystem):
 
         $ sudo raspi-config
 
@@ -25,20 +26,21 @@
         $ sudo apt-get upgrade
         $ sudo apt-get install git
 
-- Create new user for TTN and add it to sudoers
+- Create new user for GW service and add it to sudoers
 
-        $ sudo adduser ttn 
-        $ sudo adduser ttn sudo
+        $ sudo adduser mix 
+        $ sudo adduser mix sudo
 
-- To prevent the system asking root password regularly, add TTN user in sudoers file
+- To prevent the system asking root password regularly, add mix user in sudoers file
 
         $ sudo visudo
 
-Add the line `ttn ALL=(ALL) NOPASSWD: ALL`
+Add the line `mix ALL=(ALL) NOPASSWD: ALL`
 
-:warning: Beware this allows a connected console with the ttn user to issue any commands on your system, without any password control. This step is completely optional and remains your decision.
+:warning: Beware this allows a connected console with the ttn user to issue any
+commands on your system, without any password control. This step is completely optional and remains your decision.
 
-- Logout and login as `ttn` and remove the default `pi` user
+- Logout and login as `mix` and remove the default `pi` user
 
         $ sudo userdel -rf pi
 
@@ -53,10 +55,10 @@ And add the following block at the end of the file, replacing SSID and password 
                     psk="Your_wifi_password"
                 }
  
-- Clone [the installer](https://github.com/ttn-zh/ic880a-gateway/) and start the installation
+- Clone [the installer](https://github.com/heliance/lora_gw/) and start the installation
 
-        $ git clone https://github.com/ttn-zh/ic880a-gateway.git ~/ic880a-gateway
-        $ cd ~/ic880a-gateway
+        $ git clone https://github.com/heliance/lora_gw.git ~/raspi-ic880a
+        $ cd ~/raspi-ic880a
         $ sudo ./install.sh
 
 - If you want to use the remote configuration option, please make sure you have created a JSON file named as your gateway EUI (e.g. `B827EBFFFE7B80CD.json`) in the [Gateway Remote Config repository](https://github.com/ttn-zh/gateway-remote-config). 
