@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Stop on the first sign of trouble
+# Stop on the first sign of trouble.
 set -e
 
 if [ $UID != 0 ]; then
@@ -14,7 +14,7 @@ if [[ $1 != "" ]]; then VERSION=$1; fi
 echo "Avalcom LoRa GW installer"
 echo "Version $VERSION"
 
-# Update the gateway installer to the correct branch (defaults to master)
+# Update the gateway installer to the correct branch (defaults to master).
 echo "Updating installer files..."
 OLD_HEAD=$(git rev-parse HEAD)
 git fetch
@@ -29,11 +29,11 @@ fi
 
 # Request gateway configuration data
 # There are two ways to do it, manually specify everything
-# or rely on the gateway EUI and retrieve settings files from remote (recommended)
+# or rely on the gateway EUI and retrieve settings files from remote (recommended).
 echo "Gateway configuration:"
 
-# Try to get gateway ID from MAC address
-# First try eth0, if that does not exist, try wlan0 (for RPi Zero)
+# Try to get gateway ID from MAC address.
+# First try eth0, if that does not exist, try wlan0 (for RPi Zero).
 GATEWAY_EUI_NIC="eth0"
 if [[ `grep "$GATEWAY_EUI_NIC" /proc/net/dev` == "" ]]; then
     GATEWAY_EUI_NIC="wlan0"
@@ -46,43 +46,43 @@ fi
 
 GATEWAY_EUI=$(ip link show $GATEWAY_EUI_NIC |
 awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3"FFFE"$4$5$6}')
-GATEWAY_EUI=${GATEWAY_EUI^^} # to upper
+GATEWAY_EUI=${GATEWAY_EUI^^} # to upper.
 
 echo "Detected EUI $GATEWAY_EUI from $GATEWAY_EUI_NIC"
 
-read -r -p "Do you want to use remote settings file? [y/N]" response
-response=${response,,} # to lower
+#read -r -p "Do you want to use remote settings file? [y/N]" response
+#response=${response,,} # to lower
+#
+#if [[ $response =~ ^(yes|y) ]]; then
+#    NEW_HOSTNAME="ava-lora-gw"
+#    REMOTE_CONFIG=true
+#else
+printf "       Host name [ava-lora-gw]:"
+read NEW_HOSTNAME
+if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ava-lora-gw"; fi
 
-if [[ $response =~ ^(yes|y) ]]; then
-    NEW_HOSTNAME="ava-lora-gw"
-    REMOTE_CONFIG=true
-else
-    printf "       Host name [ava-lora-gw]:"
-    read NEW_HOSTNAME
-    if [[ $NEW_HOSTNAME == "" ]]; then NEW_HOSTNAME="ava-lora-gw"; fi
+printf "       Descriptive name [raspi-ic880a]:"
+read GATEWAY_NAME
+if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="raspi-ic880a"; fi
 
-    printf "       Descriptive name [raspi-ic880a]:"
-    read GATEWAY_NAME
-    if [[ $GATEWAY_NAME == "" ]]; then GATEWAY_NAME="raspi-ic880a"; fi
+printf "       Contact email: "
+read GATEWAY_EMAIL
 
-    printf "       Contact email: "
-    read GATEWAY_EMAIL
+printf "       Latitude [0]: "
+read GATEWAY_LAT
+if [[ $GATEWAY_LAT == "" ]]; then GATEWAY_LAT=0; fi
 
-    printf "       Latitude [0]: "
-    read GATEWAY_LAT
-    if [[ $GATEWAY_LAT == "" ]]; then GATEWAY_LAT=0; fi
+printf "       Longitude [0]: "
+read GATEWAY_LON
+if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
 
-    printf "       Longitude [0]: "
-    read GATEWAY_LON
-    if [[ $GATEWAY_LON == "" ]]; then GATEWAY_LON=0; fi
-
-    printf "       Altitude [0]: "
-    read GATEWAY_ALT
-    if [[ $GATEWAY_ALT == "" ]]; then GATEWAY_ALT=0; fi
-fi
+printf "       Altitude [0]: "
+read GATEWAY_ALT
+if [[ $GATEWAY_ALT == "" ]]; then GATEWAY_ALT=0; fi
+#fi
 
 
-# Change hostname if needed
+# Change hostname if needed.
 CURRENT_HOSTNAME=$(hostname)
 
 if [[ $NEW_HOSTNAME != $CURRENT_HOSTNAME ]]; then
@@ -92,11 +92,15 @@ if [[ $NEW_HOSTNAME != $CURRENT_HOSTNAME ]]; then
     sed -i "s/$CURRENT_HOSTNAME/$NEW_HOSTNAME/" /etc/hosts
 fi
 
-# Check dependencies
+# Check tools.
+echo "Installing required tools..."
+apt-get install git gcc make
+
+#Check dependencies.
 echo "Installing dependencies..."
 apt-get install swig libftdi-dev python-dev
 
-# Install LoRaWAN packet forwarder repositories
+# Install LoRaWAN packet forwarder repositories.
 INSTALL_DIR="/opt/ava-lora-gw"
 if [ ! -d "$INSTALL_DIR" ]; then mkdir $INSTALL_DIR; fi
 pushd $INSTALL_DIR
@@ -118,12 +122,12 @@ ldconfig
 
 popd
 
-# Build LoRa gateway app
+# Build LoRa gateway app.
 if [ ! -d lora_gateway ]; then
     git clone -b master https://github.com/heliance/lora_gateway.git
     pushd lora_gateway
 else
-    # Need to update the following or remove.
+    # For future needs.
     pushd lora_gateway
     git fetch origin
     git checkout legacy
@@ -140,11 +144,12 @@ make
 
 popd
 
-# Build packet forwarder
+# Build packet forwarder.
 if [ ! -d packet_forwarder ]; then
     git clone -b master https://github.com/heliance/packet_forwarder.git
     pushd packet_forwarder
 else
+    # For future needs.
     pushd packet_forwarder
     git fetch origin
     git checkout legacy
@@ -155,7 +160,7 @@ make
 
 popd
 
-# Symlink poly packet forwarder
+# Symlink poly packet forwarder.
 if [ ! -d bin ]; then mkdir bin; fi
 if [ -f ./bin/poly_pkt_fwd ]; then rm ./bin/poly_pkt_fwd; fi
 ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd ./bin/poly_pkt_fwd
@@ -163,23 +168,23 @@ cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
-# Remove old config file
-if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
+# Remove old config file.
+if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE #; fi;
 
-if [ "$REMOTE_CONFIG" = true ] ; then
-    # Get remote configuration repo. Need to update or remove.
-    if [ ! -d gateway-remote-config ]; then
-        git clone https://github.com/ttn-zh/gateway-remote-config.git
-        pushd gateway-remote-config
-    else
-        pushd gateway-remote-config
-        git pull
-        git reset --hard
-    fi
-
-    ln -s $INSTALL_DIR/gateway-remote-config/$GATEWAY_EUI.json $LOCAL_CONFIG_FILE
-
-    popd
+#if [ "$REMOTE_CONFIG" = true ] ; then
+#    # Get remote configuration repo. Need to update or remove.
+#    if [ ! -d gateway-remote-config ]; then
+#        git clone https://github.com/ttn-zh/gateway-remote-config.git
+#        pushd gateway-remote-config
+#    else
+#        pushd gateway-remote-config
+#        git pull
+#        git reset --hard
+#    fi
+#
+#    ln -s $INSTALL_DIR/gateway-remote-config/$GATEWAY_EUI.json $LOCAL_CONFIG_FILE
+#
+#    popd
 else
     echo -e "{\n\t\"gateway_conf\": {\n\t\t\"gateway_ID\": \"$GATEWAY_EUI\",
     \n\t\t\"servers\": [ { \"server_address\": \"router.eu.thethings.network\",
