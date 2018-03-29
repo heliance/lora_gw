@@ -120,7 +120,7 @@ popd
 
 # Build LoRa gateway app
 if [ ! -d lora_gateway ]; then
-    git clone -b master https://github.com/heliance/lora_gateway,git
+    git clone -b master https://github.com/heliance/lora_gateway.git
     pushd lora_gateway
 else
     # Need to update the following or remove.
