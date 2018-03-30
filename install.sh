@@ -125,7 +125,7 @@ popd
 
 # Build LoRa gateway app.
 if [ ! -d lora_gateway ]; then
-    git clone -b master https://github.com/heliance/lora_gateway.git
+    git clone -b master https://github.com/Lora-net/lora_gateway #https://github.com/heliance/lora_gateway.git
     pushd lora_gateway
 else
     # For future needs.
@@ -147,7 +147,7 @@ popd
 
 # Build packet forwarder.
 if [ ! -d packet_forwarder ]; then
-    git clone -b master https://github.com/heliance/packet_forwarder.git
+    git clone -b master https://github.com/Lora-net/packet_forwarder #https://github.com/heliance/packet_forwarder.git
     pushd packet_forwarder
 else
     # For future needs.
