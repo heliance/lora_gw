@@ -94,7 +94,6 @@ fi
 
 # Check tools.
 echo "Installing required tools..."
-apt-get update
 apt-get install gcc make
 
 #Check dependencies.
@@ -125,7 +124,7 @@ popd
 
 # Build LoRa gateway app.
 if [ ! -d lora_gateway ]; then
-    git clone -b master https://github.com/Lora-net/lora_gateway #https://github.com/heliance/lora_gateway.git
+    git clone -b master https://github.com/heliance/lora_gateway.git
     pushd lora_gateway
 else
     # For future needs.
@@ -141,13 +140,13 @@ sed -i -e 's/CFG_SPI= native/CFG_SPI= ftdi/g' ./libloragw/library.cfg
 sed -i -e 's/PLATFORM= kerlink/PLATFORM= lorank/g' ./libloragw/library.cfg
 sed -i -e 's/ATTRS{idProduct}=="6010"/ATTRS{idProduct}=="6014"/g' /etc/udev/rules.d/99-libftdi.rules
 
-make
+make all
 
 popd
 
 # Build packet forwarder.
 if [ ! -d packet_forwarder ]; then
-    git clone -b master https://github.com/Lora-net/packet_forwarder #https://github.com/heliance/packet_forwarder.git
+    git clone -b master https://github.com/heliance/packet_forwarder.git
     pushd packet_forwarder
 else
     # For future needs.
@@ -157,7 +156,7 @@ else
     git reset --hard
 fi
 
-make
+make all
 
 popd
 
@@ -170,7 +169,7 @@ cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
 # Remove old config file.
-if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE #; fi;
+if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
 
 #if [ "$REMOTE_CONFIG" = true ] ; then
 #    # Get remote configuration repo. Need to update or remove.
@@ -189,7 +188,7 @@ if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE #; fi;
 else
     echo -e "{\n\t\"gateway_conf\": {\n\t\t\"gateway_ID\": \"$GATEWAY_EUI\",
     \n\t\t\"servers\": [ { \"server_address\": \"localhost\",
-     \"serv_port_up\": 1700, \"serv_port_down\": 1700, \"serv_enabled\": true } ],
+     \"serv_port_up\": 1680, \"serv_port_down\": 1680, \"serv_enabled\": true } ],
      \n\t\t\"ref_latitude\": $GATEWAY_LAT,\n\t\t\"ref_longitude\": $GATEWAY_LON,
      \n\t\t\"ref_altitude\": $GATEWAY_ALT,\n\t\t\"contact_email\": \"$GATEWAY_EMAIL\",
      \n\t\t\"description\": \"$GATEWAY_NAME\" \n\t}\n}" >$LOCAL_CONFIG_FILE
