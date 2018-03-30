@@ -169,7 +169,7 @@ cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
 # Remove old config file.
-if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;
+if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE #; fi;
 
 #if [ "$REMOTE_CONFIG" = true ] ; then
 #    # Get remote configuration repo. Need to update or remove.
