@@ -166,7 +166,7 @@ if [ -f ./bin/poly_pkt_fwd ]; then rm ./bin/poly_pkt_fwd; fi
 ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd ./bin/poly_pkt_fwd
 cp -f ./packet_forwarder/lora_pkt_fwd/global_conf.json ./bin/global_conf.json
 ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/local_config.json ./bin/local_config.json
-chmod +x ./bin/start.sh
+chmod +x /opt/ava-lora-gw/bin/start.sh
 
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
