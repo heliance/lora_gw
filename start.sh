@@ -32,7 +32,7 @@ GATEWAY_EUI=${GATEWAY_EUI^^} # to upper
 
 echo "[Avalcom LoRa GW]: Use Gateway EUI $GATEWAY_EUI based on $GATEWAY_EUI_NIC"
 INSTALL_DIR="/opt/ava-lora-gw"
-ln -s $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/local_config.json $INSTALL_DIR/bin/local_config.json
+ln -sv $INSTALL_DIR/packet_forwarder/lora_pkt_fwd/local_config.json $INSTALL_DIR/bin/local_config.json
 LOCAL_CONFIG_FILE=$INSTALL_DIR/bin/local_conf.json
 
 #    if [ -e $LOCAL_CONFIG_FILE ]; then rm $LOCAL_CONFIG_FILE; fi;

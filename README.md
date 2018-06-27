@@ -59,6 +59,7 @@ And add the following block at the end of the file, replacing SSID and password 
 
         $ git clone https://github.com/heliance/lora_gw.git ~/raspi-ic880a
         $ cd ~/raspi-ic880a
+        $ sudo chmod +x ./install.sh
         $ sudo ./install.sh
 
 - If you want to use the remote configuration option, please make sure you have created a JSON file named as your gateway EUI (e.g. `B827EBFFFE7B80CD.json`) in the [Gateway Remote Config repository](https://github.com/ttn-zh/gateway-remote-config). 
